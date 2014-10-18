@@ -44,8 +44,13 @@ nsWebDAV.prototype = {
     this._accountKey = aAccountKey;
     this._baseURL = Services.prefs.getCharPref("mail.cloud_files.accounts." +
                                                aAccountKey + ".baseURL");
-    this._publicURL = Services.prefs.getCharPref("mail.cloud_files.accounts." +
-                                                 aAccountKey + ".publicURL");
+    try {
+      this._publicURL = Services.prefs.getCharPref("mail.cloud_files.accounts." +
+                                                   aAccountKey + ".publicURL");
+    } catch (e) {
+      // This might be a migration from 1.0 where publicURL is not supported yet.
+      this._publicURL = "";
+    }
   },
 
   uploadFile: function uploadFile(aFile, aCallback) {

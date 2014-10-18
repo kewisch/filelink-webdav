@@ -1,0 +1,8 @@
+content cloudfile-webdav chrome/content/
+locale cloudfile-webdav en-US chrome/locales/en-US/
+locale cloudfile-webdav de chrome/locales/de/
+skin cloudfile-webdav classic/1.0 chrome/skin/
+
+component {57c44a6d-2ffd-4554-8157-a592f8361176} components/nsWebDAV.js
+contract @mozilla.org/mail/cloudfile-webdav;1 {57c44a6d-2ffd-4554-8157-a592f8361176}
+category cloud-files WebDAV @mozilla.org/mail/cloudfile-webdav;1

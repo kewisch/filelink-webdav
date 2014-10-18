@@ -1,0 +1,8 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   - Portions Copyright (C) Philipp Kewisch, 2012 -->
+
+<!ENTITY WebDAVSettings.baseURL "Localización del servicio (ej. https://dav.ejemplo.com/)">
+<!ENTITY WebDAVSettings.publicURL "Localización pública (opcional)">
+<!ENTITY WebDAVSettings.description "La localización del servicio es la URL usada para subir los archivos adjuntos, con todas las subcarpetas. La localización pública especifica el lugar donde los archivos están accesibles públicamente. Si no se especifica, se usará la localización del servicio en su lugar.">

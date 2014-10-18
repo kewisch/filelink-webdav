@@ -21,7 +21,7 @@ nsWebDAV.prototype = {
 
   get type() "WebDAV",
   get displayName() "WebDAV",
-  get serviceURL() this._baseURL,
+  get serviceURL() this._publicURL || this._baseURL,
   get iconClass() "chrome://cloudfile-webdav/skin/webdav_16.png",
   get accountKey() this._accountKey,
   get lastError() this._lastError,
@@ -38,11 +38,14 @@ nsWebDAV.prototype = {
   _lastError: Cr.NS_OK,
   _uploads: null,
   _baseURL: null,
+  _publicURL: null,
 
   init: function init(aAccountKey) {
     this._accountKey = aAccountKey;
     this._baseURL = Services.prefs.getCharPref("mail.cloud_files.accounts." +
                                                aAccountKey + ".baseURL");
+    this._publicURL = Services.prefs.getCharPref("mail.cloud_files.accounts." +
+                                                 aAccountKey + ".publicURL");
   },
 
   uploadFile: function uploadFile(aFile, aCallback) {
@@ -68,7 +71,7 @@ nsWebDAV.prototype = {
         aCallback.onStopRequest(null, null, status);
       }, true);
 
-      let url = this.urlForFile(aFile);
+      let url = this._privateUrlForFile(aFile);
       this.log.info("uploading " + aFile.leafName + " to " + url);
       let channel = this.sendRequest("PUT", url, bufStream,
                                      "application/octet-stream",
@@ -81,6 +84,10 @@ nsWebDAV.prototype = {
   },
 
   urlForFile: function urlForFile(aFile) {
+    return (this._publicURL || this._baseURL) + aFile.leafName;
+  },
+
+  _privateUrlForFile: function privateUrlForFile(aFile) {
     return this._baseURL + aFile.leafName;
   },
 
@@ -89,7 +96,7 @@ nsWebDAV.prototype = {
       throw Ci.nsIMsgCloudFileProvider.offlineErr;
     }
 
-    let url = this.urlForFile(aFile);
+    let url = this._privateUrlForFile(aFile);
     if (url in this._uploads) {
       this.log.info("canceling file upload for " + aFile.leafName);
       this._uploads[url].cancel(Cr.NS_BINDING_ABORTED);
@@ -159,7 +166,7 @@ nsWebDAV.prototype = {
       aCallback.onStopRequest(null, null, status);
     }, true);
 
-    let url = this.urlForFile(aFile);
+    let url = this._privateUrlForFile(aFile);
     this.log.info("deleting " + aFile.leafName + " at " + url);
     this.sendRequest("DELETE", url, null, null, null, listener);
     aCallback.onStartRequest(null, null);

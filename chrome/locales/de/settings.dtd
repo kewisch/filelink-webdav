@@ -3,4 +3,6 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/.
    - Portions Copyright (C) Philipp Kewisch, 2012 -->
 
-<!ENTITY WebDAVSettings.baseURL "Adresse (z.B. https://dav.example.com/)">
+<!ENTITY WebDAVSettings.baseURL "Dienstadresse (z.B. https://dav.example.com/)">
+<!ENTITY WebDAVSettings.publicURL "Öffentliche Adresse (optional)">
+<!ENTITY WebDAVSettings.description "Die Dienstadresse ist die Adresse über die die Anhänge hochgeladen werden, mitsamt allen Unterordnern. Die öffentliche Adresse gibt an unter welcher Adresse die Anhänge zu erreichen sind. Wird sie nicht angegeben, so wird die Dienstadresse verwendet.">

@@ -3,4 +3,6 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/.
    - Portions Copyright (C) Philipp Kewisch, 2012 -->
 
-<!ENTITY WebDAVSettings.baseURL "Location (e.g. https://dav.example.com/)">
+<!ENTITY WebDAVSettings.baseURL "Service Location (e.g. https://dav.example.com/)">
+<!ENTITY WebDAVSettings.publicURL "Public Location (optional)">
+<!ENTITY WebDAVSettings.description "The service location is the URL used for uploading attachments, with all subfolders. The public location specifies the location where the files are publicly reachable. If not specified, the service location will be used instead.">

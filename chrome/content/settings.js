@@ -5,10 +5,17 @@
 
 function extraArgs() {
   var baseURL = document.getElementById("baseURL").value.trim();
-  if (baseURL[baseURL.length - 1] != '/') {
+  var publicURL = document.getElementById("publicURL").value.trim();
+
+  if (baseURL && baseURL[baseURL.length - 1] != '/') {
     baseURL += "/";
   }
+  if (publicURL && publicURL[publicURL.length - 1] != '/') {
+    publicURL += "/";
+  }
+
   return {
     "baseURL": { type: "char", value: baseURL },
+    "publicURL": { type: "char", value: publicURL },
   };  
 }

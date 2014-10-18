@@ -18,8 +18,13 @@
   </head>
   <body id="provider-settings">
     <form id="provider-form" onsubmit="return false;">
-      <label for="username">&WebDAVSettings.baseURL;</label>
+      <label for="baseURL">&WebDAVSettings.baseURL;</label>
       <input id="baseURL" type="text" required="true"/>
+
+      <label for="publicURL">&WebDAVSettings.publicURL;</label>
+      <input id="publicURL" type="text"/>
+
+      <label>&WebDAVSettings.description;</label>
     </form>
   </body>
 </html>

@@ -50,7 +50,7 @@ function onLoadProvider(provider) {
       .textAlign("center")
       .textBaseline("middle")
       .text(messenger.formatFileSize(totalSpace));
-  
+
     vis.render();
     document.getElementById("provider-spacebox").removeAttribute("unknown-space");
   } else {

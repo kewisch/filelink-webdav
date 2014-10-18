@@ -89,11 +89,11 @@ nsWebDAV.prototype = {
   },
 
   urlForFile: function urlForFile(aFile) {
-    return (this._publicURL || this._baseURL) + aFile.leafName;
+    return (this._publicURL || this._baseURL) + encodeURIComponent(aFile.leafName);
   },
 
   _privateUrlForFile: function privateUrlForFile(aFile) {
-    return this._baseURL + aFile.leafName;
+    return this._baseURL + encodeURIComponent(aFile.leafName);
   },
 
   cancelFileUpload: function cancelFileUpload(aFile) {
@@ -275,7 +275,8 @@ nsWebDAV.prototype = {
       QueryInterface: XPCOMUtils.generateQI([
         Ci.nsIRequestObserver,
         Ci.nsIStreamLoaderObserver,
-        Ci.nsIInterfaceRequestor
+        Ci.nsIInterfaceRequestor,
+        Ci.nsIChannelEventSink
       ]),
       onStreamComplete: function(loader, ctxt, status, resultLength, result) {
         let httpStatus = 0;
@@ -327,8 +328,43 @@ nsWebDAV.prototype = {
             aIID.equals(Ci.nsIAuthPromptProvider)) {
           return createAuthPrompt(aWithUI);
         }
-        Components.returnCode = Cr.NS_NOINTERFACE;
+
+        try {
+            return this.QueryInterface(aIID);
+        } catch (e) {
+            Components.returnCode = Cr.NS_NOINTERFACE;
+        }
         return null;
+      },
+
+      asyncOnChannelRedirect: function(aOldChannel, aNewChannel, aFlags, aCallback) {
+        function copyHeader(aHdr) {
+          try {
+            let hdrValue = aOldChannel.getRequestHeader(aHdr);
+            if (hdrValue) {
+              aNewChannel.setRequestHeader(aHdr, hdrValue, false);
+            }
+          } catch (e if e.code == Components.results.NS_ERROR_NOT_AVAILIBLE) {
+            // If the header is not available thats ok
+          }
+        }
+
+        if (aOldChannel instanceof Components.interfaces.nsIUploadChannel &&
+            aOldChannel instanceof Components.interfaces.nsIHttpChannel &&
+            aOldChannel.uploadStream) {
+          let uploadData = aOldChannel.uploadStream.QueryInterface(Components.interfaces.nsISeekableStream);
+          let uploadContent = aOldChannel.getRequestHeader("Content-Type");
+
+          uploadData.seek(Components.interfaces.nsISeekableStream.NS_SEEK_SET, 0);
+          aNewChannel.setUploadStream(uploadData, uploadContent, -1);
+        }
+
+
+        copyHeader("Depth");
+        aNewChannel.requestMethod = aOldChannel.requestMethod;
+        aNewChannel.notificationCallbacks = aOldChannel.notifcationCallbacks;
+
+        aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
       }
     }
   }

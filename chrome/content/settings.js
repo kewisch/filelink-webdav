@@ -17,5 +17,5 @@ function extraArgs() {
   return {
     "baseURL": { type: "char", value: baseURL },
     "publicURL": { type: "char", value: publicURL },
-  };  
+  };
 }

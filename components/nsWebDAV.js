@@ -198,10 +198,11 @@ nsWebDAV.prototype = {
         let doc = parser.parseFromBuffer(result, resultLength,
                                          "application/xml");
         let rtype = doc.getElementsByTagNameNS("DAV:", "resourcetype");
-        rtype = rtype && rtype.length && rtype[0].firstChild &&
-                  rtype[0].firstChild.localName || "unknown";
-        self.log.info(self._baseURL + " is a " + rtype);
-        if (rtype != "collection") {
+        if (rtype && rtype.length && rtype[0].getElementsByTagNameNS("DAV:", "collection")) {
+          self.log.info(self._baseURL + " is a collection");
+        } else {
+          let subtype = rtype[0].firstElementChild.localname || "unknown";
+          self.log.info(self._baseURL + " is a " + subtype);
           status = Cr.NS_ERROR_FAILURE;
         }
       }

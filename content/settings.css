@@ -7,6 +7,10 @@ label, input {
   width: 100%;
 }
 
+.browser-style > input[type="checkbox"] + label {
+  display: inline;
+}
+
 .browser-style > input[type="password"] {
   background-color: #fff;
   border: 1px solid #b1b1b1;

@@ -12,7 +12,13 @@ function setup() {
 }
 
 async function restoreOptions() {
-  let prefs = await browser.storage.local.get(["baseURL", "publicURL", "username", "password"]);
+  let prefs = await browser.storage.local.get({
+    baseURL: "",
+    publicURL: "",
+    checkOverwrite: true,
+    username: "",
+    password: ""
+  });
 
   for (let key of Object.keys(prefs)) {
     let elem = document.getElementById(key);
@@ -20,9 +26,11 @@ async function restoreOptions() {
       continue;
     }
 
-    console.log(key, prefs[key]);
-
-    elem.value = prefs[key];
+    if (elem.type == "checkbox") {
+      elem.checked = prefs[key];
+    } else {
+      elem.value = prefs[key];
+    }
   }
 
   document.getElementById("publicURL").setAttribute("placeholder", document.getElementById("baseURL").value);
@@ -35,9 +43,11 @@ function changeOptions(event) {
     return;
   }
 
-  console.log("SET", node.id, node.value);
-
-  browser.storage.local.set({ [node.id]: node.value });
+  if (node.type == "checkbox") {
+    browser.storage.local.set({ [node.id]: node.checked });
+  } else {
+    browser.storage.local.set({ [node.id]: node.value });
+  }
 
   if (node.id == "baseURL") {
     document.getElementById("publicURL").setAttribute("placeholder", node.value);

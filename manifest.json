@@ -17,18 +17,15 @@
   },
 
   "permissions": [
-    "storage"
+    "storage",
+    "<all_urls>"
   ],
 
   "cloud_file": {
     "name": "__MSG_serviceName__",
-    "settings_url": "/content/settings.html",
-    "management_url": "/content/settings.html"
+    "settings_url": "content/settings.html",
+    "management_url": "content/settings.html"
   },
 
-  "background": {
-    "scripts": [
-      "background/background.js"
-    ]
-  }
+  "background": { "page": "background/background.html" }
 }

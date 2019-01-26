@@ -4,6 +4,8 @@
 
 /* globals browser */
 
+import { fetchAuth } from './fetchAuth.js'
+
 const PROPFIND_QUOTA = `
 <propfind xmlns="DAV:">
   <prop>
@@ -13,13 +15,20 @@ const PROPFIND_QUOTA = `
 </propfind>
 `.trim();
 
-const PROPFIND_RESTYPE =`
+const PROPFIND_RESTYPE = `
 <propfind xmlns="DAV:">
   <prop>
     <resourcetype/>
   </prop>
 </propfind>
-`;
+`.trim();
+
+const RE_TOKEN = /^[!#$%&'*+.^_`|~0-9a-zA-Z\x21-x7E-]+/;
+const RE_TOKEN68 = /^[A-Za-z0-9._~+/-]+/;
+const RE_1SP = /^\s+/;
+const RE_OBWS = /^\s*/;
+const RE_EQ = /^=/;
+const RE_QUOTED_STRING = /^"(?:[^"\\]|\\.)*"/
 
 var abortControllers = new Map();
 var uploadedFiles = new Map();
@@ -29,20 +38,17 @@ async function updateQuota(accountId) {
 
   let response = await fetchAuth(baseURL, {
     method: "PROPFIND",
-    credentials: "include",
+    auth: { username, password },
     headers: {
       "Content-Type": "application/xml",
       "Depth": 0
     },
-    body: PROPFIND_QUOTA,
-    username: username,
-    password: password
+    body: PROPFIND_QUOTA
   });
 
   if (!response.ok) {
     return;
   }
-
 
   let parser = new DOMParser();
   let doc = parser.parseFromString(await response.text(), "application/xml");
@@ -57,18 +63,16 @@ async function updateQuota(accountId) {
 }
 
 async function detectRestype(url) {
-  let { username, password } = await browser.storage.local.get(["username", "password"]);
+  let auth = await browser.storage.local.get(["username", "password"]);
 
   let response = await fetchAuth(url, {
     method: "PROPFIND",
-    credentials: "include",
+    auth: auth,
     headers: {
       "Content-Type": "application/xml",
       "Depth": 0
     },
-    body: PROPFIND_RESTYPE,
-    username: username,
-    password: password
+    body: PROPFIND_RESTYPE
   });
 
   if (!response.ok) {
@@ -87,41 +91,56 @@ async function detectRestype(url) {
 }
 
 browser.cloudFile.onFileUpload.addListener(async (account, { id, name, data }) => {
-  let { baseURL, publicURL, username, password } = await browser.storage.local.get(["baseURL", "publicURL", "username", "password"]);
+  let prefs = await browser.storage.local.get({
+    baseURL: "",
+    publicURL: "",
+    checkOverwrite: true,
+    username: "",
+    password: ""
+  });
 
-  let targetURL = new URL(baseURL, name);
-  let publicTargetURL = new URL(publicURL || baseURL, name);
+  let targetURL = new URL(name, prefs.baseURL);
+  let publicTargetURL = new URL(name, prefs.publicURL || prefs.baseURL);
 
   let controller = new AbortController();
   abortControllers.set(id, controller);
 
+  let headers = {
+    "Content-Type": "application/octet-stream",
+    "Origin": targetURL.origin
+  };
+
+  if (prefs.checkOverwrite) {
+    headers["If-None-Match"] = "*";
+  }
+
   try {
-    let response = await fetchAuth(targetURL, {
+    let response = await fetchAuth(targetURL.href, {
       method: "PUT",
-      headers: { "Content-Type": "application/octet-stream" },
-      credentials: "include",
-      data: data,
-      signal: controller.signal,
-      username: username,
-      password: password
+      headers: headers,
+      auth: { username: prefs.username, password: prefs.password },
+      body: data,
+      signal: controller.signal
     });
 
     if (response.status == 507) {
       throw new DOMException("Quota Exceeded", "QuotaExceededError");
+    } else if (response.status == 412) {
+      throw new DOMException("File already exists", "ConstraintError");
     } else if (!response.ok) {
       throw new Error(`Could not upload file, HTTP ${response.status}: ${response.statusText}`);
     }
 
-    uploadedFiles.set(account + "#" + id, targetURL);
+    uploadedFiles.set(account + "#" + id, targetURL.href);
 
-    return { url: publicTargetURL, aborted: controller.signal.aborted };
+    return { url: publicTargetURL.href, aborted: controller.signal.aborted };
   } finally {
     abortControllers.delete(id);
   }
 });
 
 browser.cloudFile.onFileDeleted.addListener(async (account, fileId) => {
-  let { username, password } = await browser.storage.local.get(["username", "password"]);
+  let auth = await browser.storage.local.get(["username", "password"]);
 
   let fileKey = account + "#" + fileId;
   if (!uploadedFiles.has(fileKey)) {
@@ -130,9 +149,7 @@ browser.cloudFile.onFileDeleted.addListener(async (account, fileId) => {
 
   let response = await fetchAuth(uploadedFiles.get(fileKey), {
     method: "DELETE",
-    credentials: "include",
-    username: username,
-    password: password
+    auth: auth
   });
 
   if (response.ok) {
@@ -172,22 +189,3 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
 
   browser.webdavlegacy.purge();
 })();
-
-
-async function fetchAuth(url, options) {
-  let resp = await fetch(url, options);
-  if (resp.status == 401 && options.username && options.password) {
-    let wwwauth = resp.headers.get("WWW-Authenticate");
-    if (wwwauth) {
-      console.log("GOT HEADER!!", wwwauth);
-    } else {
-      // We don't get this header for some reason. We can only assume basic auth then because we
-      // don't have access to the realm anyway.
-      options.headers = options.headers || {};
-      options.headers.Authorization = "Basic " + btoa(`${options.username}:${options.password}`);
-      resp = await fetch(url, options);
-    }
-  }
-
-  return resp;
-}

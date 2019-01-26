@@ -17,6 +17,9 @@
   "publicURL": {
     "message": "Public Location (optional)"
   },
+  "checkOverwrite": {
+    "message": "Do not overwrite existing files"
+  },
   "username": {
     "message": "Username"
   },

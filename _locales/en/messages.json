@@ -1,0 +1,26 @@
+{
+  "extensionDescription": {
+    "message": "Adds the possibility to use a WebDAV store for Filelink"
+  },
+  "extensionName": {
+    "message": "WebDAV for Filelink"
+  },
+  "serviceName": {
+    "message": "WebDAV"
+  },
+  "description": {
+    "message": "The service location is the URL used for uploading attachments, with all subfolders. The public location specifies the location where the files are publicly reachable. If not specified, the service location will be used instead."
+  },
+  "baseURL": {
+    "message": "Service Location"
+  },
+  "publicURL": {
+    "message": "Public Location (optional)"
+  },
+  "username": {
+    "message": "Username"
+  },
+  "password": {
+    "message": "Password"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "version": "2.0.0",
+  "applications": {
+    "gecko": {
+      "id": "cloudfile-webdav@mozilla.kewis.ch",
+      "strict_min_version": "60.4"
+    }
+  },
+  "default_locale": "en",
+
+  "icons": {
+    "16": "images/webdav_16.png",
+    "32": "images/webdav_32.png"
+  },
+
+  "permissions": [
+    "storage"
+  ],
+
+  "cloud_file": {
+    "name": "__MSG_serviceName__",
+    "settings_url": "/content/settings.html",
+    "management_url": "/content/settings.html"
+  },
+
+  "background": {
+    "scripts": [
+      "background/background.js"
+    ]
+  }
+}
